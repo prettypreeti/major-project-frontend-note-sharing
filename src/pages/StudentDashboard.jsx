@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import FileList from '../components/FileList';
 
 
 export default function StudentDashboard() {
@@ -9,7 +8,7 @@ export default function StudentDashboard() {
 
 
  useEffect(() => {
-   fetch("https://script.google.com/macros/s/AKfycbzvzUUB-LGGzjLtp-a9vHlaot7Kt_DuIVB0qLbtdnFzJiN9eTD7UmivjZb6xQ1LdXO3/exec")
+   fetch("https://script.google.com/macros/s/AKfycbw9RT8vQbRWg98-xsVmJguyiZ92j4R2mn3uUqHp99wkZQ8Nt4XSGTo5W7LbtRJfjFzH/exec")
      .then((res) => res.json())
      .then((data) => {
        setNotes(data);
@@ -33,7 +32,7 @@ export default function StudentDashboard() {
        color: '#FFD700',
      }}
    >
-     <div className="container animate__animated animate__fadeIn">
+     <div className="container animate_animated animate_fadeIn">
        <div className="text-center mb-5">
        <h2 className="fw-bold">Welcome, {studentName || userId} 🎓</h2>
 
@@ -51,7 +50,7 @@ export default function StudentDashboard() {
            notes.map((note, index) => (
              <div
                key={index}
-               className="col-md-4 mb-4 animate__animated animate__zoomIn"
+               className="col-md-4 mb-4 animate_animated animate_zoomIn"
              >
                <div
                  className="card h-100 shadow-lg border-0"
@@ -88,5 +87,3 @@ export default function StudentDashboard() {
    </div>
  );
 }
-
-
