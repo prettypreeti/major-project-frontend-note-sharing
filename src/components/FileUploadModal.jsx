@@ -1,38 +1,64 @@
 import React, { useState } from 'react';
 
-export default function FileUploadModal({ onClose }) {
+export default function FileUploadModal({ onClose, onUploaded }) {
   const [educatorName, setEducatorName] = useState('');
   const [batchName, setBatchName] = useState('');
   const [fileUrl, setFileUrl] = useState('');
 
   const handleUpload = async () => {
-    const uploadTime = new Date().toISOString(); 
-    const formData = new FormData();
-    formData.append('educatorName', educatorName);
-    formData.append('batchName', batchName);
-    formData.append('fileUrl', fileUrl);
-    formData.append('uploadTime', uploadTime);
+    if (!educatorName.trim() || !batchName.trim() || !fileUrl.trim()) {
+      alert("Please fill in all fields before uploading.");
+      return;
+    }
+
+    const uploadTime = new Date().toISOString();
+    const note = { educatorName, batchName, fileUrl, uploadTime };
+
+    // Save locally so uploads work even if remote backend is unavailable.
+    try {
+      const { saveNote } = await import("../utils/notesStorage");
+      saveNote(note);
+    } catch (e) {
+      console.warn("Could not save note locally:", e);
+    }
 
     try {
+      const formData = new FormData();
+      formData.append('educatorName', educatorName);
+      formData.append('batchName', batchName);
+      formData.append('fileUrl', fileUrl);
+      formData.append('uploadTime', uploadTime);
+
       const response = await fetch(
-        "https://script.google.com/macros/s/AKfycbw9RT8vQbRWg98-xsVmJguyiZ92j4R2mn3uUqHp99wkZQ8Nt4XSGTo5W7LbtRJfjFzH/exec", // Your Google Script URL
+        "https://script.google.com/macros/s/AKfycbw9RT8vQbRWg98-xsVmJguyiZ92j4R2mn3uUqHp99wkZQ8Nt4XSGTo5W7LbtRJfjFzH/exec",
         {
           method: "POST",
           body: formData,
         }
       );
 
-      const result = await response.json();
-
-      if (result.success) {
-        alert("Uploaded successfully!");
+      if (!response.ok) {
+        console.warn("Upload request failed:", response.status, response.statusText);
+        alert("Upload saved locally (remote upload failed).\nPlease check the backend configuration.");
+        onUploaded?.();
         onClose();
-      } else {
-        alert("Upload failed.");
+        return;
       }
+
+      const result = await response.json();
+      if (result && result.success) {
+        alert("Uploaded successfully!");
+      } else {
+        alert("Upload saved locally (remote upload returned an unexpected response).");
+      }
+
+      onUploaded?.();
+      onClose();
     } catch (error) {
       console.error("Upload Error:", error);
-      alert("An error occurred while uploading.");
+      alert("Upload saved locally (remote upload failed).");
+      onUploaded?.();
+      onClose();
     }
   };
 

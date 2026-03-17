@@ -1,17 +1,25 @@
 import React, { useEffect, useState } from 'react';
-
+import { getStoredNotes } from '../utils/notesStorage';
 
 export default function StudentDashboard() {
  const userId = localStorage.getItem('userId');
  const studentName = localStorage.getItem('studentName');
- const [notes, setNotes] = useState([]);
-
+ const [notes, setNotes] = useState(getStoredNotes());
 
  useEffect(() => {
+   // Try to fetch from remote backend if configured, but fall back to local storage
    fetch("https://script.google.com/macros/s/AKfycbw9RT8vQbRWg98-xsVmJguyiZ92j4R2mn3uUqHp99wkZQ8Nt4XSGTo5W7LbtRJfjFzH/exec")
-     .then((res) => res.json())
+     .then((res) => {
+       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+       return res.json();
+     })
      .then((data) => {
-       setNotes(data);
+       if (Array.isArray(data) && data.length > 0) {
+         setNotes(data);
+       }
+     })
+     .catch(() => {
+       // Ignore errors; local storage is already providing notes.
      });
  }, []);
 

@@ -1,16 +1,22 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FileUploadModal from '../components/FileUploadModal';
 import FileList from '../components/FileList';
+import { getStoredNotes } from '../utils/notesStorage';
 
 
 export default function EducatorDashboard() {
  const [showModal, setShowModal] = useState(false);
+ const [notes, setNotes] = useState([]);
  const educatorName = localStorage.getItem('educatorName');
  const userId = localStorage.getItem('userId');
 
+ const refreshNotes = () => setNotes(getStoredNotes());
+
+ useEffect(() => {
+   refreshNotes();
+ }, []);
 
  if (!userId) return <div className="text-center text-warning mt-5">⚠️ Please log in to continue</div>;
-
 
  return (
    <div
@@ -30,7 +36,7 @@ export default function EducatorDashboard() {
 
 
      <div className="w-100" style={{ maxWidth: '800px' }}>
-       <FileList />
+       <FileList notes={notes} />
      </div>
      <button
        className="btn btn-outline-warning rounded-circle shadow-lg"
@@ -52,7 +58,13 @@ export default function EducatorDashboard() {
 
 
      {/* Modal */}
-     {showModal && <FileUploadModal onClose={() => setShowModal(false)} />}
+     {showModal && (
+       <FileUploadModal
+         onClose={() => setShowModal(false)}
+         onUploaded={refreshNotes}
+       />
+     )}
    </div>
  );
 }
+
